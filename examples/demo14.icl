@@ -1,0 +1,1 @@
+ fun x:Int -> x * 2 end (4) ;;

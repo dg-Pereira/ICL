@@ -1,0 +1,1 @@
+def a = new(5) in a := *a + 1 ; println *a end ;;

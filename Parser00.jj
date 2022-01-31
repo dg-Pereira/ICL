@@ -1,0 +1,333 @@
+PARSER_BEGIN(Parser00)
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import ast.*;
+import asdf.*;
+import types.*;
+import values.*;
+
+//def f = fun x:Int -> !x end in print f(true) end ;; é válido
+
+public class Parser00 {
+
+}
+
+PARSER_END(Parser00)
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+| "\n"
+}
+
+TOKEN :
+{
+  < Num: (["0"-"9"]) + >
+  |
+  < PLUS : "+" >
+  |
+  < MINUS : "-">
+  |
+  < TIMES : "*">
+  |
+  < DIV : "/">
+  |
+  < LPAR : "(" >
+  |
+  < RPAR : ")" >
+  |
+  < TERM: ";;" >
+  |
+  < Bool: ("true"|"false") >
+  |
+  < AND : "&&" >
+  |
+  < OR : "||" >
+  |
+  < NOT : "!" >
+  |
+  < LESS : "<" >
+  |
+  < GREATER : ">" >
+  |
+  < EQUAL : "=" >
+  |
+  < DEF : "def" >
+  |
+  < IN : "in" >
+  |
+  < END : "end" >
+  |
+  < SEMICOLON: ";" >
+  |
+  < ASSIGN: ":=" >
+  |
+  < VAR: "new" >
+  |
+  < WHILE: "while" >
+  |
+  < DO: "do" >
+  |
+  < IF: "if" >
+  |
+  < THEN: "then" >
+  |
+  < ELSE: "else" >
+  |
+  < FUN: "fun" >
+  |
+  < ARROW: "->" >
+  |
+  < COMMA: "," >
+  |
+  < COLON: ":" >
+  |
+  < INT_TYPE: "Int" >
+  |
+  < BOOL_TYPE: "Bool" >
+  |
+  < REF_TYPE: "Ref" >
+  |
+  < FUN_TYPE: "Fun" >
+  |
+  < PRINT: "print" >
+  |
+  < PRINTLN: "println" >
+  |
+  < Id: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"] )* >
+}
+
+ASTNode Start():
+{ ASTNode e; }
+{
+   e = Seq() <TERM>  { return e; }
+}
+
+ASTNode Seq():
+{
+  ASTNode e1, e2;
+}
+{
+  // left-associative: Exp() ( < SEMICOLON > Exp() )*
+  e1 = Assign()
+  	[
+  		< SEMICOLON > e2 = Seq()
+  		{ e1 = new ASTSeq(e1,e2);}
+ 	] // right associative tree
+  {
+    return e1;
+  }
+}
+
+ASTNode Assign() :
+{
+  ASTNode e1, e2;
+}
+{
+  e1 = Conj()
+  	[
+  		< ASSIGN > e2 = Assign()
+  		{ e1 = new ASTAssign(e1,e2);}
+ 	]
+  {
+    return e1;
+  }
+}
+
+
+ASTNode Conj() :
+{ ASTNode e1, e2; }
+{
+   e1 = Disj()
+     ( <AND> e2 = Disj() { e1 = new ASTAnd(e1,e2); }
+     )*
+     { return e1; }
+}
+
+ASTNode Disj() :
+{ ASTNode e1, e2; }
+{
+   e1 = Cmp()
+     ( <OR> e2 = Cmp() { e1 = new ASTOr(e1,e2); }
+     )*
+     { return e1; }
+}
+
+ASTNode Cmp() :
+{ ASTNode e1, e2; }
+{
+   e1 = Exp()
+     ( <LESS> ( <EQUAL> e2 = Exp() { e1 = new ASTLessEqual(e1,e2); } | e2 = Exp() { e1 = new ASTLess(e1,e2); })
+     | <GREATER> ( <EQUAL> e2 = Exp() { e1 = new ASTGreaterEqual(e1,e2); } | e2 = Exp() { e1 = new ASTGreater(e1,e2); })
+     | <EQUAL> <EQUAL> e2 = Exp() { e1 = new ASTEqual(e1,e2); }
+     | <NOT> <EQUAL> e2 = Exp() { e1 = new ASTDiff(e1,e2); }
+     )*
+     { return e1; }
+}
+
+ASTNode Exp() :
+{ ASTNode e1, e2; }
+{
+   e1 = Term()
+     ( <PLUS> e2 = Term() { e1 = new ASTAdd(e1,e2); }
+     | <MINUS> e2 = Term() { e1 = new ASTSub(e1,e2); }
+     )*
+     { return e1; }
+}
+
+ASTNode Term() :
+{ ASTNode e1, e2; }
+{
+     e1 = Unary()
+     ( <TIMES> e2 = Unary() { e1 = new ASTMul(e1,e2); }
+     | <DIV> e2 = Unary() { e1 = new ASTDiv(e1,e2); }
+     )*
+     { return e1; }
+}
+
+ASTNode Unary() :
+{ ASTNode e; }
+{
+	e = Call()
+	{
+		return e;
+	}
+	|
+	< MINUS > e = Call()
+	{
+		return new ASTUminus(e);
+	}
+	|
+	<NOT> e = Call()
+    {
+    	return new ASTNot(e);
+    }
+  |
+  < TIMES > e = Call()
+  {
+    return new ASTDeref(e);
+  }
+  // must be changed afterwards, unary operators
+  // *f() <> (*f)()
+  // *a.b == *(a.b)
+  // *a.b <> (*a).b
+}
+
+ASTNode Call() :
+{ ASTNode e; List<ASTNode> l = null; }
+{
+	e = Fact() ( <LPAR> l = ExpList() <RPAR> { e = new ASTCall(l, e); } )*
+	{
+		return e;
+	}
+}
+
+List<ASTNode> ExpList() :
+{ ASTNode e1, e2; List<ASTNode> l = new ArrayList(); }
+{
+	(e1 = Seq() { l.add(e1); } (<COMMA> e2 = Seq() { l.add(e2); } )*)?
+	{
+		return l;
+	}
+}
+
+IType Type():
+{ IType t1; List<IType> l = new ArrayList(); }
+{
+	<INT_TYPE>
+	{
+		return new TypeInt();
+	}
+	|
+	<BOOL_TYPE>
+	{
+		return new TypeBool();
+	}
+	|
+	<REF_TYPE> <LPAR> t1 = Type() <RPAR>
+	{
+		return new TypeRef(t1);
+	}
+	|
+	<FUN_TYPE> <LPAR> t1 = Type() (<COMMA> { l.add(t1); } t1 = Type())* <RPAR>
+	{
+		return new TypeFun(l, t1);
+	}
+}
+
+ASTNode Fact() :
+{ Token x1, x2; IType t1, t2; ASTDef e; ASTNode e1, e2, e3; DeclList ll; List<ASTArg> l = new LinkedList(); }
+{
+	x1 = <Num>
+	{
+		return new ASTNum(Integer.parseInt(x1.image));
+	}
+	|
+  <PRINT> e1 = Assign() 
+    {
+      return new ASTPrint(e1);
+    }
+    |
+    <PRINTLN> e1 = Assign() 
+    {
+      return new ASTPrintln(e1);
+    }
+    |
+	x1 = < Bool >
+	{
+		return new ASTBool(Boolean.parseBoolean(x1.image));
+	}
+	|
+	x1 = <Id>
+	{
+		return new ASTId(x1.image);
+	}
+	|
+
+    <DEF> { ll = new DeclList(); } (x1 = <Id> <EQUAL> e1 = Seq() { ll.add(x1.image, e1); })+ <IN> e2 = Seq() <END>
+    {
+      try{
+        e1 = new ASTDef(ll, e2);
+        return e1;
+      } catch(Exception ex){
+        System.out.println(ex.getMessage());
+      }
+    }
+
+    |
+    < VAR > <LPAR > e1 = Seq() <RPAR >
+    {
+        return new ASTNew(e1);
+    }
+    |
+    <LPAR> e1 = Seq() <RPAR>
+    {
+      return e1;
+    }
+    |
+    < WHILE > e1 = Seq() < DO > e2 = Seq() < END >
+    {
+      return new ASTWhile(e1,e2);
+    }
+    |
+    < IF > e1 = Seq() < THEN > e2 = Seq() < ELSE > e3 = Seq() < END >
+    {
+      return new ASTIfElse(e1,e2,e3);
+    }
+	|
+	<IF> e1 = Seq() <THEN> e2 = Seq() <END>
+	{
+		return new ASTIf(e1,e2);
+	}
+    |
+    < FUN > (x1 = <Id> <COLON> t1 = Type() { l.add(new ASTArg(x1.image, t1)); } ( <COMMA> x2 = <Id> <COLON> t2 = Type() { l.add(new ASTArg(x2.image, t2)); } )* )? < ARROW > e2 = Seq() < END >
+    {
+        return new ASTFun(e2, l);
+    }
+}
+
