@@ -1,6 +1,6 @@
 ## ICL Language
 This language consists of an interpreter and a compiler.
-The interpreter implements all features of the level 2 language, and the compiler implements all features of the level 1 language, plus typechecking. The compiler does not support functions. Aditionally, both the interpreter and the compiler support a for loop (see [ASTFor.java](https://github.com/dg-Pereira/ICL/blob/main/ast/ASTFor.java)), and the modulo operator (see [ASTRem.java](https://github.com/dg-Pereira/ICL/blob/main/ast/ASTRem.java)).
+The interpreter implements all features of the level 2 language, and the compiler implements all features of the level 1 language, plus typechecking. The compiler does not support functions. Aditionally, both the interpreter and the compiler support a for loop (see [ASTFor.java](https://github.com/dg-Pereira/ICL/blob/main/ast/ASTFor.java)), the modulo operator (see [ASTRem.java](https://github.com/dg-Pereira/ICL/blob/main/ast/ASTRem.java)), and the xor operator (see [ASTXor.java](https://github.com/dg-Pereira/ICL/blob/main/ast/ASTXor.java)).
 
 To compile the interpreter and compiler, and run some examples (located in [/examples](https://github.com/dg-Pereira/ICL/tree/main/examples)), you need to do the following:
 
