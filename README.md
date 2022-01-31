@@ -12,4 +12,5 @@ To compile the interpreter and compiler, and run some examples (located in [/exa
 
 The ICLInterpreter program starts a prompt where you can write your programs, and the results will be immediately printed after you hit enter.
 The ICLCompiler program accepts a file name as an argument, and compiles the code to a file called Main.class using jasmin. To then run the code, run java on the Main.class file that was generated. File names are recommended to have a .icl extension. If no file name is given as argument, the compiler tries to find a file called code.icl. If that file is not found, the compiler closes.
+
 Note that since we originally intended to do the compiler for the language with functions, the parser requires types to be specified when defining functions in the interpreter. These type definitions aren't actually used.
