@@ -1,8 +1,7 @@
-def a = new(2) in
-	def b = new(*a) in
-		def c = a in
-			a := *b + 2;
-			c := *c + 2
+def f = fun x:Int -> x+1 end in
+	def g = fun y:Int -> f(y)+2 end in
+		def x = g(2) in
+			print x+x
 		end
 	end
 end ;;

@@ -1,7 +1,8 @@
- def x = 1 in 
-	def f = (fun y:Int -> y+x) in
-		def g = (fun x:Int -> x + f(x))
-			in g(2)
-		end
+def glo = new(0) in
+	def f = fun n:Int -> glo := *glo + n end in
+		f(2);
+		f(3);
+		f(4);
+		println *glo
 	end
 end ;;

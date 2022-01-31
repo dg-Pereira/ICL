@@ -11,7 +11,7 @@ public class Reference {
 	private String name;
 	private String type;
 
-	Reference(CodeBlock c, IType type) {
+	Reference(CodeBlock c, int varN, IType type) {
 		name = type.getName(c);
 		this.type = getType(c, type);
 	}
@@ -21,15 +21,14 @@ public class Reference {
 	}
 
 	public String className() {
-		return "ref_of_" + name;
+		return "Ref_of_" + name;
 	}
 
-	// mudar isto para o CodeBlock
 	public static String getType(CodeBlock c, IType type) {
 		if (type instanceof TypeInt || type instanceof TypeBool) {
 			return type.getName(c);
 		} else {
-			return "L" + type.getName(c) + "";
+			return "L" + type.getName(c) + ";";
 		}
 	}
 
@@ -49,7 +48,7 @@ public class Reference {
 
 			writer.write(".class public " + className() + "\n");
 			writer.write(".super java/lang/Object\n");
-			writer.write(".field public v " + type + ";\n");
+			writer.write(".field public v " + type + "\n");
 			writer.write(".method public <init>()V\n");
 			writer.write("aload_0\n");
 			writer.write("invokenonvirtual java/lang/Object/<init>()V\n");

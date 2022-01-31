@@ -1,12 +1,10 @@
 package ast;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.CodeBlock;
-import compiler.DeclList;
 import compiler.Environment;
 import compiler.Frame;
 import compiler.Memory;
@@ -16,33 +14,28 @@ import exceptions.IdentifierNotDeclaredException;
 import exceptions.StaticTypingException;
 import exceptions.TypeMismatchException;
 import types.IType;
+import types.TypeBool;
 import values.IValue;
+import values.VBool;
 
-public class ASTDef extends ASTNode {
+public class ASTFor extends ASTNode {
 
-	private ASTNode body;
+	private ASTNode cond, inc, body;
 	private Map<String, ASTNode> defs;
 
-	private static final String OP = "def";
+	private static final String OP = "for";
 
-	public ASTDef(DeclList l, ASTNode body) throws IdentifierAlreadyDeclaredException {
+	public ASTFor(Map<String, ASTNode> defs, ASTNode cond, ASTNode inc, ASTNode body) {
+		this.defs = defs;
+		this.cond = cond;
+		this.inc = inc;
 		this.body = body;
-		Iterator<Entry<String, ASTNode>> it = l.iterator();
-		defs = new HashMap<>();
-
-		while (it.hasNext()) {
-			Entry<String, ASTNode> next = it.next();
-			if (!defs.containsKey(next.getKey())) {
-				defs.put(next.getKey(), next.getValue());
-			} else {
-				throw new IdentifierAlreadyDeclaredException(next.getKey());
-			}
-		}
 	}
 
 	public IValue eval(Environment<IValue> env, Memory m)
-			throws TypeMismatchException, IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException {
+			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
 		Environment<IValue> e = env.beginScope();
+
 		for (Map.Entry<String, ASTNode> defs : defs.entrySet()) {
 			IValue result = defs.getValue().eval(env, m);
 			e.assoc(defs.getKey(), result);
@@ -50,36 +43,57 @@ public class ASTDef extends ASTNode {
 				throw new IdentifierAlreadyDeclaredException(defs.getKey());
 			}
 		}
-		IValue ret = body.eval(e, m);
-		e.endScope();
+
+		// é preciso fazer num método separado para a definição dos nomes não ser
+		// repetida em cada iteração
+		IValue ret = recEval(e, m);
+		env.endScope();
 		return ret;
+	}
+
+	private IValue recEval(Environment<IValue> e, Memory m)
+			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
+		IValue condEval = cond.eval(e, m);
+		if (!(condEval instanceof VBool)) {
+			throw new TypeMismatchException(condEval.getName(), OP);
+		}
+
+		if (((VBool) condEval).getVal()) {
+			body.eval(e, m);
+			inc.eval(e, m);
+			return recEval(e, m);
+		} else {
+			return condEval;
+		}
 	}
 
 	public IType typecheck(Environment<IType> env, Memory m)
 			throws StaticTypingException, IdentifierNotDeclaredException, IdentifierAlreadyDeclaredException {
-
 		Environment<IType> envLocal = env.beginScope();
+
 		for (Map.Entry<String, ASTNode> entry : defs.entrySet()) {
 			String id = entry.getKey();
 			ASTNode val = entry.getValue();
 			IType t1 = val.typecheck(env, m);
 			envLocal.assoc(id, t1);
 		}
-		IType t2 = body.typecheck(envLocal, m);
-		type = t2;
+
+		IType t1 = cond.typecheck(envLocal, m);
+		if (!(t1 instanceof TypeBool)) {
+			throw new StaticTypingException();
+		}
+
+		body.typecheck(envLocal, m);
+		inc.typecheck(envLocal, m);
+
 		envLocal.endScope();
-		return t2;
-	}
-
-	public void bind(String id, ASTNode node) {
-		defs.put(id, node);
-	}
-
-	public void addBody(ASTNode body) {
-		this.body = body;
+		type = new TypeBool();
+		return new TypeBool();
 	}
 
 	public void compile(CodeBlock c) {
+		int l1 = c.getLabel();
+		int l2 = c.getLabel();
 
 		int newFrameN = c.getNewFrameN();
 		Frame oldFrame = c.getCurrentFrame();
@@ -122,7 +136,13 @@ public class ASTDef extends ASTNode {
 
 		c.emit("astore 4");
 
+		c.emit("L" + l1 + ":");
+		cond.compile(c);
+		c.emit("ifeq L" + l2);
 		body.compile(c);
+		inc.compile(c);
+		c.emit("goto L" + l1);
+		c.emit("L" + l2 + ":");
 
 		c.endFrame();
 

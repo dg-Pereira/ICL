@@ -3,23 +3,22 @@ package ast;
 import compiler.CodeBlock;
 import compiler.Environment;
 import compiler.Memory;
-import compiler.Reference;
 import exceptions.IdentifierAlreadyDeclaredException;
 import exceptions.IdentifierNotDeclaredException;
 import exceptions.StaticTypingException;
 import exceptions.TypeMismatchException;
 import types.IType;
-import types.TypeRef;
+import types.TypeInt;
 import values.IValue;
-import values.VCell;
+import values.VInt;
 
-public class ASTAssign extends ASTNode {
+public class ASTRem extends ASTNode {
+
+	private static final String OP = "%";
 
 	private ASTNode lhs, rhs;
 
-	private static final String OP = ":=";
-
-	public ASTAssign(ASTNode l, ASTNode r) {
+	public ASTRem(ASTNode l, ASTNode r) {
 		lhs = l;
 		rhs = r;
 	}
@@ -28,10 +27,11 @@ public class ASTAssign extends ASTNode {
 			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
 		IValue v1 = lhs.eval(e, m);
 		IValue v2 = rhs.eval(e, m);
-		if (v1 instanceof VCell) {
-			VCell v1Cell = (VCell) v1;
-			m.set(v1Cell, v2);
-			return v2;
+
+		if (v1 instanceof VInt && v2 instanceof VInt) {
+			VInt v1Int = (VInt) v1;
+			VInt v2Int = (VInt) v2;
+			return new VInt(v1Int.getVal() % v2Int.getVal());
 		} else {
 			throw new TypeMismatchException(v1.getName(), v2.getName(), OP);
 		}
@@ -41,20 +41,17 @@ public class ASTAssign extends ASTNode {
 			throws StaticTypingException, IdentifierNotDeclaredException, IdentifierAlreadyDeclaredException {
 		IType t1 = lhs.typecheck(e, m);
 		IType t2 = rhs.typecheck(e, m);
-
-		if (t1 instanceof TypeRef && (((TypeRef) t1).getRefType().equals(t2))) {
-			type = t2;
-			return t2;
+		if (t1 instanceof TypeInt && t2 instanceof TypeInt) {
+			type = new TypeInt();
+			return type;
 		} else {
 			throw new StaticTypingException();
 		}
 	}
 
 	public void compile(CodeBlock c) {
-		Reference ref = c.getReference((TypeRef) lhs.getType());
-
 		lhs.compile(c);
 		rhs.compile(c);
-		c.emit("putfield " + ref.className() + "/v " + ref.getRefType());
+		c.emit("irem");
 	}
 }

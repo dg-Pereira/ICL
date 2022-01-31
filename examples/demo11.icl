@@ -1,7 +1,10 @@
-def
-	k = 2
-	a = new(k)
-	b = new(*a + 2)
-in
-	b := *a * *b + k
+def a = new(2) in
+	def b = new(*a) in
+		def c = a in
+			a := *b + 2;
+			c := *c + 2;
+			println *a ;
+			println *c
+		end
+	end
 end ;;

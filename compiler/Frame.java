@@ -2,17 +2,18 @@ package compiler;
 
 import java.io.*;
 import java.util.Map;
-import java.util.Map.Entry;
+
+import types.IType;
 
 public class Frame {
 	private final int frameN;
 	private final Frame parent;
-	private int defCount;
+	private Map<String, IType> init;
 
-	public Frame(int frameN, Frame parent, int defCount) {
+	public Frame(int frameN, Frame parent, Map<String, IType> init) {
 		this.frameN = frameN;
 		this.parent = parent;
-		this.defCount = defCount;
+		this.init = init;
 	}
 
 	public Frame getParent() {
@@ -24,7 +25,6 @@ public class Frame {
 	}
 
 	public void emitFrame(CodeBlock c) {
-		System.out.println("chegou");
 		String fileName = "Frame_" + frameN + ".j";
 		File file = new File(fileName);
 		FileWriter writer = null;
@@ -42,8 +42,10 @@ public class Frame {
 				writer.write(".field public sl LFrame_" + parent.getFrameN() + ";\n");
 			}
 
-			for (int i = 0; i < defCount; i++) {
-				writer.write(".field public v" + i + " I\n");
+			int i = 0;
+			for (Map.Entry<String, IType> entry : init.entrySet()) {
+				String type = Reference.getType(c, entry.getValue());
+				writer.write(".field public v" + i++ + " " + type + "\n");
 			}
 
 			writer.write(".method public <init>()V\n");

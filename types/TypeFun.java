@@ -1,5 +1,6 @@
 package types;
 
+import java.util.Iterator;
 import java.util.List;
 
 import ast.ASTNode;
@@ -23,8 +24,8 @@ public class TypeFun implements IType {
 		return type;
 	}
 
-	public List<IType> getParams() {
-		return params;
+	public Iterator<IType> getParams() {
+		return params.iterator();
 	}
 
 	// unused
@@ -42,6 +43,38 @@ public class TypeFun implements IType {
 			if (!args.get(i).typecheck(e, m).equals(params.get(i))) {
 				throw new StaticTypingException();
 			}
+		}
+	}
+
+	// se other não for função é false
+	// se o tipo de retorno de other não for o mesmo que o de this é false
+	// se o tipo de algum parametro for diferente é false
+	// se o numero de parametros for diferente é false
+	// se passar estes checks todos é true
+	public boolean equals(Object other) {
+		if (other instanceof TypeFun) {
+
+			TypeFun otherFun = (TypeFun) other;
+
+			if (!type.equals(otherFun.getType())) {
+				return false;
+			}
+
+			Iterator<IType> it = otherFun.getParams();
+			int i = 0;
+			IType curr = null;
+			while (it.hasNext()) {
+				curr = it.next();
+				if (!params.get(i++).equals(curr)) {
+					return false;
+				}
+			}
+			if (i != params.size()) {
+				return false;
+			}
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

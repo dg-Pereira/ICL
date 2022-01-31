@@ -11,4 +11,8 @@ public class TypeInt implements IType {
 	public String getName(CodeBlock c) {
 		return "I";
 	}
+
+	public boolean equals(Object other) {
+		return other instanceof TypeInt;
+	}
 }

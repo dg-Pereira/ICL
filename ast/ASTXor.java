@@ -3,23 +3,22 @@ package ast;
 import compiler.CodeBlock;
 import compiler.Environment;
 import compiler.Memory;
-import compiler.Reference;
 import exceptions.IdentifierAlreadyDeclaredException;
 import exceptions.IdentifierNotDeclaredException;
 import exceptions.StaticTypingException;
 import exceptions.TypeMismatchException;
 import types.IType;
-import types.TypeRef;
+import types.TypeBool;
 import values.IValue;
-import values.VCell;
+import values.VBool;
 
-public class ASTAssign extends ASTNode {
+public class ASTXor extends ASTNode {
 
-	private ASTNode lhs, rhs;
+	private final ASTNode lhs, rhs;
 
-	private static final String OP = ":=";
+	private static final String OP = "xor";
 
-	public ASTAssign(ASTNode l, ASTNode r) {
+	public ASTXor(ASTNode l, ASTNode r) {
 		lhs = l;
 		rhs = r;
 	}
@@ -28,10 +27,12 @@ public class ASTAssign extends ASTNode {
 			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
 		IValue v1 = lhs.eval(e, m);
 		IValue v2 = rhs.eval(e, m);
-		if (v1 instanceof VCell) {
-			VCell v1Cell = (VCell) v1;
-			m.set(v1Cell, v2);
-			return v2;
+
+		if (v1 instanceof VBool && v2 instanceof VBool) {
+			VBool v1Bool = (VBool) v1;
+			VBool v2Bool = (VBool) v2;
+
+			return new VBool(v1Bool.getVal() ^ v2Bool.getVal());
 		} else {
 			throw new TypeMismatchException(v1.getName(), v2.getName(), OP);
 		}
@@ -41,20 +42,17 @@ public class ASTAssign extends ASTNode {
 			throws StaticTypingException, IdentifierNotDeclaredException, IdentifierAlreadyDeclaredException {
 		IType t1 = lhs.typecheck(e, m);
 		IType t2 = rhs.typecheck(e, m);
-
-		if (t1 instanceof TypeRef && (((TypeRef) t1).getRefType().equals(t2))) {
-			type = t2;
-			return t2;
+		if (t1 instanceof TypeBool && t2 instanceof TypeBool) {
+			type = new TypeBool();
+			return type;
 		} else {
 			throw new StaticTypingException();
 		}
 	}
 
 	public void compile(CodeBlock c) {
-		Reference ref = c.getReference((TypeRef) lhs.getType());
-
 		lhs.compile(c);
 		rhs.compile(c);
-		c.emit("putfield " + ref.className() + "/v " + ref.getRefType());
+		c.emit("ixor");
 	}
 }

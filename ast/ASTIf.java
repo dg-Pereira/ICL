@@ -14,17 +14,18 @@ import values.VBool;
 
 public class ASTIf extends ASTNode {
 
-	private static final String OP = "if";
+	private static final String OP = "if else";
 
 	private final ASTNode cond;
 	private final ASTNode thenBranch;
+	private final ASTNode elseBranch;
 
-	public ASTIf(ASTNode cond, ASTNode thenBranch) {
+	public ASTIf(ASTNode cond, ASTNode thenBranch, ASTNode elseBranch) {
 		this.cond = cond;
 		this.thenBranch = thenBranch;
+		this.elseBranch = elseBranch;
 	}
 
-	//se não cumprir a condição devolve um VBool com false.
 	public IValue eval(Environment<IValue> e, Memory m)
 			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
 
@@ -37,7 +38,7 @@ public class ASTIf extends ASTNode {
 		if (((VBool) condEval).getVal()) {
 			return thenBranch.eval(e, m);
 		} else {
-			return condEval;
+			return elseBranch.eval(e, m);
 		}
 	}
 
@@ -46,18 +47,28 @@ public class ASTIf extends ASTNode {
 
 		IType t1 = cond.typecheck(e, m);
 		if (t1 instanceof TypeBool) {
-			type = thenBranch.typecheck(e, m);
-			return type;
+			IType t2 = thenBranch.typecheck(e, m);
+			IType t3 = elseBranch.typecheck(e, m);
+			if (!t2.getClass().getName().equals(t3.getClass().getName())) {
+				throw new StaticTypingException();
+			}
+			type = t2;
+			return t2;
 		} else {
 			throw new StaticTypingException();
 		}
+
 	}
 
 	public void compile(CodeBlock c) {
 		String falseLabel = "L" + c.getLabel();
+		String trueLabel = "L" + c.getLabel();
 		cond.compile(c);
 		c.emit("ifeq " + falseLabel);
 		thenBranch.compile(c);
+		c.emit("goto " + trueLabel);
 		c.emit(falseLabel + ":");
+		elseBranch.compile(c);
+		c.emit(trueLabel + ":");
 	}
 }

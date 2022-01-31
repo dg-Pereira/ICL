@@ -9,14 +9,14 @@ public class TypeMismatchException extends Exception {
 	}
 
 	public TypeMismatchException(String type1, String op) {
-		super("The type " + type1 + "does not match with the operation " + op + ".");
+		super("The type " + type1 + " does not match with the operation " + op + ".");
 	}
 
 	public TypeMismatchException(String type1, String type2, String op) {
-		super("The types " + type1 + " and " + type2 + "do not match with the operation " + op + ".");
+		super("The types " + type1 + " and " + type2 + " do not match with the operation " + op + ".");
 	}
 
 	public TypeMismatchException(String type1, String type2, String type3, String op) {
-		super("The types " + type1 + ", " + type2 + " and " + type3 + "do not match with the operation " + op + ".");
+		super("The types " + type1 + ", " + type2 + " and " + type3 + " do not match with the operation " + op + ".");
 	}
 }

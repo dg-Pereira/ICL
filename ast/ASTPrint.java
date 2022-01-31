@@ -30,8 +30,9 @@ public class ASTPrint extends ASTNode {
 
 	public IType typecheck(Environment<IType> e, Memory m)
 			throws StaticTypingException, IdentifierNotDeclaredException, IdentifierAlreadyDeclaredException {
-		type = body.typecheck(e, m);
-		return type;
+		IType t1 = body.typecheck(e, m);
+		type = t1;
+		return t1;
 	}
 
 	public void compile(CodeBlock c) {

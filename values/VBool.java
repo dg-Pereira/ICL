@@ -2,7 +2,7 @@ package values;
 
 public class VBool implements IValue {
 
-	private static final String TYPE_NAME = "bool";
+	private static final String TYPE_NAME = "Boolean";
 
 	private boolean v;
 

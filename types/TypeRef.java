@@ -18,4 +18,12 @@ public class TypeRef implements IType {
 		return c.getReference(this).className();
 	}
 
+	public boolean equals(Object other) {
+		if (other instanceof TypeRef) {
+			TypeRef otherRef = (TypeRef) other;
+			return this.refType.equals(otherRef.getRefType());
+		} else {
+			return false;
+		}
+	}
 }

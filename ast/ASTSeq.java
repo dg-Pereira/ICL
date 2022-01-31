@@ -35,7 +35,6 @@ public class ASTSeq extends ASTNode {
 
 	public void compile(CodeBlock c) {
 		lhs.compile(c);
-		// c.emit("pop");
 		rhs.compile(c);
 	}
 

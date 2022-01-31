@@ -32,11 +32,10 @@ public class ASTBool extends ASTNode {
 	}
 
 	public void compile(CodeBlock c) {
-		if (b) {
+		if (b)
 			c.emit("iconst_1");
-		} else {
+		else
 			c.emit("iconst_0");
-		}
 	}
 
 }

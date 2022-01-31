@@ -11,4 +11,8 @@ public class TypeBool implements IType {
 	public String getName(CodeBlock c) {
 		return "Z";
 	}
+
+	public boolean equals(Object other) {
+		return other instanceof TypeBool;
+	}
 }

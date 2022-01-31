@@ -48,6 +48,6 @@ public class ASTId extends ASTNode {
 			c.emit("getfield Frame_" + currFrame.getFrameN() + "/sl LFrame_" + currFrame.getParent().getFrameN() + ';');
 		}
 
-		c.emit("getfield Frame_" + currFrame.getFrameN() + "/v" + addr.loc + " I");
+		c.emit("getfield Frame_" + currFrame.getFrameN() + "/v" + addr.loc + " " + addr.type);
 	}
 }

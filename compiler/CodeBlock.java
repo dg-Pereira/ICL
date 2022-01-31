@@ -2,6 +2,7 @@ package compiler;
 
 import java.io.*;
 import java.util.Stack;
+
 import exceptions.IdentifierAlreadyDeclaredException;
 import exceptions.IdentifierNotDeclaredException;
 import types.IType;
@@ -29,20 +30,20 @@ public class CodeBlock {
 
 	public CodeBlock() {
 		pc = 0;
-		code = new String[100];
+		code = new String[1000];
 		frameCount = 0;
-		defs = new Environment<>();
-		currFrame = new Frame(0, null, 0);
+		currFrame = new Frame(0, null, null);
 		this.frames = new Stack<>();
 		currLabel = 1;
 		refCount = 0;
 		typeClasses = new HashMap<>();
-		Reference intRef = new Reference(this, getNewRefN(), new TypeInt());///////////////////////// 77
+		Reference intRef = new Reference(this, getNewRefN(), new TypeInt());
 		Reference boolRef = new Reference(this, getNewRefN(), new TypeBool());
 		intRef.emitRef();
 		boolRef.emitRef();
 		typeClasses.put(new TypeInt(), intRef);
 		typeClasses.put(new TypeBool(), boolRef);
+		defs = null;
 	}
 
 	public int getLabel() {
@@ -50,6 +51,11 @@ public class CodeBlock {
 	}
 
 	public void changeFrame(Frame newFrame) {
+		if (defs == null) {
+			defs = new Environment<>();
+		} else {
+			defs = defs.beginScope();
+		}
 		currFrame = newFrame;
 	}
 
@@ -62,8 +68,8 @@ public class CodeBlock {
 		currFrame = frames.pop();
 	}
 
-	public void addDef(String id, int loc) throws IdentifierAlreadyDeclaredException {
-		FrameLocation frameLoc = new FrameLocation(currFrame.getFrameN(), loc);
+	public void addDef(String id, int loc, String type) throws IdentifierAlreadyDeclaredException {
+		FrameLocation frameLoc = new FrameLocation(currFrame.getFrameN(), loc, type);
 		defs.assoc(id, frameLoc);
 	}
 
@@ -96,17 +102,16 @@ public class CodeBlock {
 	private String stringArrayToString(String[] stringArray) {
 		String ret = "";
 		for (String s : stringArray) {
-			// fix this, it's ugly
-			if (s != null) {
-				ret = ret + s + "\n";
+			if (s == null){
+				break;
 			}
+			ret = ret + s + "\n";
 		}
 		return ret;
 	}
 
 	public void dump(String filename) {
 		String codeString = stringArrayToString(code);
-		// dump code to file
 		File file = new File(filename);
 		FileWriter writer = null;
 		try {

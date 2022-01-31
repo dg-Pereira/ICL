@@ -8,8 +8,6 @@ import exceptions.IdentifierNotDeclaredException;
 import exceptions.StaticTypingException;
 import exceptions.TypeMismatchException;
 import types.IType;
-import types.TypeBool;
-import types.TypeInt;
 import values.IValue;
 import values.VArg;
 
@@ -25,8 +23,6 @@ public class ASTArg extends ASTNode {
 
 	public IValue eval(Environment<IValue> e, Memory m)
 			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
-		System.out.println(type instanceof TypeBool);
-		System.out.println(type instanceof TypeInt);
 		return new VArg(name);
 	}
 
@@ -37,6 +33,7 @@ public class ASTArg extends ASTNode {
 		return type;
 	}
 
+	@Override
 	public void compile(CodeBlock c) {
 
 	}

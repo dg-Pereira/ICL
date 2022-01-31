@@ -17,7 +17,7 @@ public class ASTDeref extends ASTNode {
 
 	private ASTNode rhs;
 
-	private static final String OP = "*";
+	private static final String OP = "dereferencing";
 
 	public ASTDeref(ASTNode r) {
 		rhs = r;
@@ -25,7 +25,12 @@ public class ASTDeref extends ASTNode {
 
 	public IValue eval(Environment<IValue> e, Memory m)
 			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
-		return m.get((VCell) rhs.eval(e, m));
+		IValue rhsEval = rhs.eval(e, m);
+		if (rhsEval instanceof VCell) {
+			return m.get((VCell) rhsEval);
+		} else {
+			throw new TypeMismatchException(rhsEval.getName(), OP);
+		}
 	}
 
 	public IType typecheck(Environment<IType> env, Memory m)

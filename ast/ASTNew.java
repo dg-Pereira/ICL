@@ -27,8 +27,9 @@ public class ASTNew extends ASTNode {
 
 	public IType typecheck(Environment<IType> e, Memory m)
 			throws StaticTypingException, IdentifierNotDeclaredException, IdentifierAlreadyDeclaredException {
-		type = new TypeRef(body.typecheck(e, m));
-		return type;
+		IType t1 = new TypeRef(body.typecheck(e, m));
+		type = t1;
+		return t1;
 	}
 
 	public void compile(CodeBlock c) {
@@ -39,6 +40,6 @@ public class ASTNew extends ASTNode {
 		c.emit("invokespecial " + ref.className() + "/<init>()V");
 		c.emit("dup");
 		body.compile(c);
-		c.emit("putfield " + ref.className() + "/value " + ref.getRefType());
+		c.emit("putfield " + ref.className() + "/v " + ref.getRefType());
 	}
 }

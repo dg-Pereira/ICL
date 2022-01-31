@@ -8,6 +8,7 @@ import exceptions.IdentifierNotDeclaredException;
 import exceptions.StaticTypingException;
 import exceptions.TypeMismatchException;
 import types.IType;
+import types.TypeBool;
 import types.TypeInt;
 import values.IValue;
 import values.VBool;
@@ -45,7 +46,7 @@ public class ASTLess extends ASTNode {
 		IType t2 = rhs.typecheck(e, m);
 
 		if (t1 instanceof TypeInt && t2 instanceof TypeInt) {
-			type = new TypeInt();
+			type = new TypeBool();
 			return type;
 		} else {
 			throw new StaticTypingException();

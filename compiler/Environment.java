@@ -6,7 +6,6 @@ import java.util.Map;
 import exceptions.IdentifierAlreadyDeclaredException;
 import exceptions.IdentifierNotDeclaredException;
 
-//type is IValue, for the interpreter, or FrameLocation for the compiler
 public class Environment<Type> {
 
 	private Environment<Type> father;
@@ -23,7 +22,7 @@ public class Environment<Type> {
 	}
 
 	public Environment<Type> beginScope() {
-		return new Environment(this);
+		return new Environment<Type>(this);
 	}
 
 	public Environment<Type> endScope() {

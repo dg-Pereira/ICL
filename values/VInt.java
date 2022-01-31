@@ -2,7 +2,7 @@ package values;
 
 public class VInt implements IValue {
 
-	private static final String TYPE_NAME = "int";
+	private static final String TYPE_NAME = "Integer";
 
 	private int v;
 

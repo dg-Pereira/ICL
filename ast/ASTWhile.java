@@ -23,7 +23,6 @@ public class ASTWhile extends ASTNode {
 		this.body = body;
 	}
 
-	@Override
 	public IValue eval(Environment<IValue> e, Memory m)
 			throws IdentifierAlreadyDeclaredException, IdentifierNotDeclaredException, TypeMismatchException {
 		IValue condEval = cond.eval(e, m);
@@ -48,7 +47,7 @@ public class ASTWhile extends ASTNode {
 
 		body.typecheck(e, m);
 		type = new TypeBool();
-		return type;
+		return new TypeBool();
 	}
 
 	public void compile(CodeBlock c) {
@@ -58,7 +57,6 @@ public class ASTWhile extends ASTNode {
 		cond.compile(c);
 		c.emit("ifeq L" + l2);
 		body.compile(c);
-		c.emit("pop");
 		c.emit("goto L" + l1);
 		c.emit("L" + l2 + ":");
 	}
