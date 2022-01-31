@@ -88,7 +88,7 @@ public class ASTFor extends ASTNode {
 
 		envLocal.endScope();
 		type = new TypeBool();
-		return new TypeBool();
+		return type;
 	}
 
 	public void compile(CodeBlock c) {
