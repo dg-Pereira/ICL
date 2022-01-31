@@ -1,9 +1,8 @@
-
 ## ICL Language
 This language consists of an interpreter and a compiler.
 The interpreter implements all features of the level 2 language, and the compiler implements all features of the level 1 language, plus typechecking. The compiler does not support functions. Aditionally, both the interpreter and the compiler support a for loop (see ASTFor.java), and the modulo operator (see ASTRem.java).
 
-To compile the interpreter and compiler, and run some examples (located in /examples), you need to do the following:
+To compile the interpreter and compiler, and run some examples (located in [/examples](https://github.com/dg-Pereira/ICL/tree/main/examples)), you need to do the following:
 
 ## How to run
  - Run javacc on the parser file (Parser00.jj). 
